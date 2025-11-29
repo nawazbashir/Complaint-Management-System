@@ -19,6 +19,7 @@ connect().then((connection) => {
     console.error("Database connection failed:", error);
     process.exit(1);
 });
+// Followings are the imports of the routes
 import issueRoutes from "./routes/issue.routes.js";
 import departmentRoutes from "./routes/department.routes.js";
 import complaintRoutes from "./routes/complaint.routes.js";
