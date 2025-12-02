@@ -4,13 +4,18 @@ import { mssql, connect } from "../utils/features.js";
 
 // CREATE ISSUE
 export const createIssue = TryCatch(async (req, res, next) => {
-    const { issue_type: rawIssueType } = req.body;
+    let { issue_type } = req.body;
 
-    if (!rawIssueType) throw new ApiError(400, "issue_type is required");
+    if (!issue_type || issue_type.trim() === "") throw new ApiError(400, "issue_type is required and must be valid");
 
-    const issue_type = rawIssueType.trim().toUpperCase();
+    issue_type = issue_type.trim().toUpperCase();
 
     const pool = await connect();
+    const existingIssue = await pool.request()
+        .input("issue_type", mssql.VarChar, issue_type)
+        .query(`SELECT * FROM Issues WHERE issue_type = @issue_type`);
+    if (existingIssue.recordset.length > 0)
+        throw new ApiError(409, "Issue type already exists");
     await pool.request()
         .input("issue_type", mssql.VarChar, issue_type)
         .query(`INSERT INTO Issues (issue_type) VALUES (@issue_type)`);
@@ -58,13 +63,21 @@ export const deleteIssue = TryCatch(async (req, res, next) => {
 // UPDATE ISSUE
 export const updateIssue = TryCatch(async (req, res, next) => {
     const { id } = req.params;
-    const { issue_type: rawIssueType } = req.body;
+    let { issue_type } = req.body;
 
-    if (!rawIssueType) throw new ApiError(400, "issue_type is required");
+    if (!issue_type || issue_type.trim() === "") throw new ApiError(400, "issue_type is required and must be valid");
 
-    const issue_type = rawIssueType.trim().toUpperCase();
+     issue_type = issue_type.trim().toUpperCase();
 
     const pool = await connect();
+    const existingIssue = await pool.request()
+        .input("issue_type", mssql.VarChar, issue_type)
+        .input("id", mssql.Int, id)
+        .query(`SELECT * FROM Issues WHERE issue_type = @issue_type AND issue_id != @id`);
+        
+    if (existingIssue.recordset.length > 0)
+        throw new ApiError(409, "Another issue with the same type already exists");
+
     const result = await pool.request()
         .input("id", mssql.Int, id)
         .input("issue_type", mssql.VarChar, issue_type)

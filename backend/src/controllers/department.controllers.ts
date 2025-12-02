@@ -6,16 +6,25 @@ import { mssql, connect } from "../utils/features.js";
 export const createDepartment = TryCatch(async (req, res, next) => {
   let { deptt_name } = req.body;
 
-  if (!deptt_name) {
+  if (!deptt_name || deptt_name.trim() === "") {
     throw new ApiError(
       400,
-      "All department fields are required and must be valid"
+      "Department name is required and must be valid"
     );
   }
 
   deptt_name = deptt_name.trim().toUpperCase();
 
   const pool = await connect();
+  const existingDepartment = await pool
+    .request()
+    .input("deptt_name", mssql.VarChar, deptt_name)
+    .query(`SELECT * FROM Departments WHERE deptt_name = @deptt_name`);
+
+  if (existingDepartment.recordset.length > 0) {
+    throw new ApiError(409, "Department name already exists");
+  }
+
   await pool.request().input("deptt_name", mssql.VarChar, deptt_name).query(`
             INSERT INTO Departments (deptt_name)
             VALUES (@deptt_name)
@@ -68,26 +77,41 @@ export const updateDepartment = TryCatch(async (req, res, next) => {
   const { id } = req.params;
   let { deptt_name } = req.body;
 
-  if (deptt_name === undefined || deptt_name.trim() == "") {
-     next(new ApiError(400, "department name is required to update"));
+  if (!deptt_name || deptt_name.trim() === "") {
+    throw new ApiError(400, "Department name is required to update");
   }
 
-  if (typeof deptt_name === "string")
-    deptt_name = deptt_name.trim().toUpperCase();
+  deptt_name = deptt_name.trim().toUpperCase();
 
   const pool = await connect();
-  const request = pool.request();
-  const result = await request
+
+  // 🔍 Check unique name using a fresh request
+  const duplicateCheck = await pool.request()
+    .input("deptt_name", mssql.VarChar, deptt_name)
     .input("id", mssql.Int, Number(id))
-    .input("deptt_name", mssql.VarChar(100), deptt_name).query(`
-        UPDATE Departments
-        SET deptt_name = @deptt_name
-        WHERE deptt_id = @id
+    .query(`
+      SELECT 1 FROM Departments
+      WHERE deptt_name = @deptt_name AND deptt_id != @id
     `);
 
-  if (result.rowsAffected[0] === 0) {
+  if (duplicateCheck.recordset.length > 0) {
+    throw new ApiError(409, "Another department with the same name already exists");
+  }
+
+  // ✍️ Update using a fresh request
+  const updateQuery = await pool.request()
+    .input("deptt_name", mssql.VarChar(100), deptt_name)
+    .input("id", mssql.Int, Number(id))
+    .query(`
+      UPDATE Departments
+      SET deptt_name = @deptt_name
+      WHERE deptt_id = @id
+    `);
+
+  if (updateQuery.rowsAffected[0] === 0) {
     throw new ApiError(404, "Department not found");
   }
 
   res.json({ message: "Department updated successfully" });
 });
+
