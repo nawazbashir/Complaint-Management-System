@@ -85,7 +85,6 @@ export const updateDepartment = TryCatch(async (req, res, next) => {
 
   const pool = await connect();
 
-  // 🔍 Check unique name using a fresh request
   const duplicateCheck = await pool.request()
     .input("deptt_name", mssql.VarChar, deptt_name)
     .input("id", mssql.Int, Number(id))
@@ -98,13 +97,12 @@ export const updateDepartment = TryCatch(async (req, res, next) => {
     throw new ApiError(409, "Another department with the same name already exists");
   }
 
-  // ✍️ Update using a fresh request
   const updateQuery = await pool.request()
     .input("deptt_name", mssql.VarChar(100), deptt_name)
     .input("id", mssql.Int, Number(id))
     .query(`
       UPDATE Departments
-      SET deptt_name = @deptt_name
+      SET deptt_name = @deptt_name, updated_at = SYSDATETIME()
       WHERE deptt_id = @id
     `);
 
