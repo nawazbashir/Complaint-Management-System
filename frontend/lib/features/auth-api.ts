@@ -39,6 +39,12 @@ export const authApi = createApi({
         body: credentials,
       }),
     }),
+    logout: builder.mutation<{ message: string }, void>({
+      query: () => ({
+        url: "/users/logout",
+        method: "POST",
+      }),
+    }),
     register: builder.mutation<RegisterResponse, RegisterRequest>({
       query: (userData) => ({
         url: "/users/new",

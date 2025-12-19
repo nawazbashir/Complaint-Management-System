@@ -46,7 +46,7 @@ export const createUser = TryCatch(async (req, res, next) => {
 export const getAllUsers = TryCatch(async (req, res) => {
   const pool = await connect();
   const result = await pool.request()
-    .query("SELECT * FROM Users");
+    .query(`SELECT u.user_id, u.name, u.email, u.phone, u.password, u.role_id, u.is_team_member, u.updated_at, u.created_at, r.role_name, r.role_id FROM Users u JOIN Roles r ON u.role_id = r.role_id`);
 
   res.json(result.recordset);
 });
@@ -171,3 +171,12 @@ export const refresh = TryCatch(async (req, res) => {
   const newAccessToken = generateAccessToken(user);
   res.json({ accessToken: newAccessToken });
 });
+
+export const logout = TryCatch(async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) throw new ApiError(400, "No active session");
+
+  res.clearCookie("rtk", { httpOnly: true, secure: true, sameSite: "none" });
+  res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "none" });
+  res.json({ message: "Logged out successfully" });
+})

@@ -41,7 +41,7 @@ import { Loader2, PlusCircle, Save, X } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  phone: z.string().min(10, "Valid phone number is required"),
+  phone: z.string().min(5, "Valid phone number is required"),
   email: z.string().email("Valid email is required"),
   role_id: z.string().min(1, "Role is required"),
   is_team_member: z.boolean(),

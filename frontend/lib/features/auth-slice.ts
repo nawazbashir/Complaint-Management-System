@@ -30,7 +30,7 @@ const authSlice = createSlice({
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", action.payload.accessToken)
         localStorage.setItem("user", JSON.stringify(action.payload.user))
-        document.cookie = `accessToken=${action.payload.accessToken}; path=/; max-age=2592000; SameSite=Lax`
+        document.cookie = `accessToken=${action.payload.accessToken}; path=/; max-age=${7*24*60*60*1000}; SameSite=Lax`
       }
     },
     logout: (state) => {
@@ -40,7 +40,8 @@ const authSlice = createSlice({
       if (typeof window !== "undefined") {
         localStorage.removeItem("accessToken")
         localStorage.removeItem("user")
-        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+        cookieStore.delete("accessToken")
+
       }
     },
     loadFromStorage: (state) => {
@@ -51,7 +52,7 @@ const authSlice = createSlice({
           state.accessToken = token
           state.user = JSON.parse(user)
           state.isAuthenticated = true
-          document.cookie = `accessToken=${token}; path=/; max-age=2592000; SameSite=Lax`
+          document.cookie = `accessToken=${token}; path=/; max-age=${7*24*60*60*1000}; SameSite=Lax`
         }
       }
     },

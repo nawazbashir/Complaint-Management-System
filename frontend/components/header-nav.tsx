@@ -18,6 +18,12 @@ import React from "react"
 import { logout } from "@/lib/features/auth-slice"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "@/lib/store"
+import { issueApi } from "@/lib/features/issue-api"
+import { complaintApi } from "@/lib/features/complaint-api"
+import { departmentApi } from "@/lib/features/department-api"
+import { authApi } from "@/lib/features/auth-api"
+import { roleApi } from "@/lib/features/role-api"
+import { userApi } from "@/lib/features/user-api"
 
 const labelMap: Record<string, string> = {
   "issue-def": "Issue Def",
@@ -35,6 +41,13 @@ export function HeaderNav() {
   const { user } = useSelector((state: RootState) => state.auth)
 
   const handleLogout = () => {
+    dispatch(issueApi.util.resetApiState())
+    dispatch(complaintApi.util.resetApiState())
+    dispatch(departmentApi.util.resetApiState())
+    dispatch(authApi.util.resetApiState())
+    dispatch(roleApi.util.resetApiState())
+    dispatch(userApi.util.resetApiState())
+
     dispatch(logout())
     router.push("/login")
   }
