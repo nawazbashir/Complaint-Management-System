@@ -1,6 +1,7 @@
 import { TryCatch } from "../middlewares/error.middleware.js";
 import { ApiError } from "../utils/ApiError.js";
 import { mssql, connect } from "../utils/features.js";
+import validator from "validator";
 
 // CREATE DEPARTMENT
 export const createDepartment = TryCatch(async (req, res, next) => {

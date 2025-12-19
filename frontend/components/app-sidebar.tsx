@@ -13,6 +13,7 @@ import {
   GalleryVerticalEnd,
   Home,
   AlertOctagon,
+  ShieldCheck,
 } from "lucide-react";
 
 import { SearchForm } from "@/components/search-form";
@@ -50,6 +51,7 @@ const data = {
         { title: "Issue Def", url: "/issue-def", icon: AlertCircle },
         { title: "Department Def", url: "/department-def", icon: Building2 },
         { title: "Company Def", url: "/company-def", icon: Building },
+        { title: "Role Def", url: "/role-def", icon: ShieldCheck },
         { title: "User Def", url: "/user-def", icon: Users },
       ],
     },

@@ -1,12 +1,13 @@
 import { TryCatch } from "../middlewares/error.middleware.js";
 import { ApiError } from "../utils/ApiError.js";
 import { mssql, connect } from "../utils/features.js";
-
+import validator from "validator";
 // CREATE COMPLAINT
 export const createComplaint = TryCatch(async (req, res, next) => {
     let { department_id, issue_id, complaint_detail, status } = req.body;
-    console.log(department_id, issue_id, complaint_detail, status)
-    if (!department_id || !issue_id || !complaint_detail) {
+    const user_id = req.user.id;
+    console.log(department_id, issue_id, user_id, complaint_detail, status, req.user);
+    if (!department_id || !issue_id || !complaint_detail || !user_id) {
         throw new ApiError(400, "department_id, issue_id and complaint_detail are required");
     }
 
@@ -21,11 +22,12 @@ export const createComplaint = TryCatch(async (req, res, next) => {
     await pool.request()
         .input("department_id", mssql.Int, department_id)
         .input("issue_id", mssql.Int, issue_id)
+        .input("user_id", mssql.Int, user_id)
         .input("complaint_detail", mssql.NVarChar, complaint_detail)
         .input("status", mssql.VarChar, status)
         .query(`
-            INSERT INTO Complaints (department_id, issue_id, complaint_detail, status)
-            VALUES (@department_id, @issue_id, @complaint_detail, @status)
+            INSERT INTO Complaints (department_id, issue_id, user_id, complaint_detail, status)
+            VALUES (@department_id, @issue_id, @user_id, @complaint_detail, @status)
         `);
 
     res.json({ message: "Complaint created successfully" });
@@ -45,6 +47,28 @@ export const getComplaints = TryCatch(async (req, res, next) => {
     res.json(result.recordset);
 });
 
+export const getUserComplaints = TryCatch(async (req, res, next) => {
+    const user_id = req.user.id;
+    console.log(user_id)
+    const pool = await connect();
+    const result = await pool.request()
+        .input("user_id", mssql.Int, user_id)
+        .query(`
+        SELECT c.complaint_id, c.complaint_detail, c.status, c.created_at, c.updated_at,
+               d.deptt_name, i.issue_type, u.name AS user_name
+            FROM Complaints c
+            JOIN Departments d ON c.department_id = d.deptt_id
+            JOIN Issues i ON c.issue_id = i.issue_id
+            JOIN Users u ON c.user_id = u.user_id
+            WHERE c.user_id = @user_id
+        `);
+    if (result.recordset.length === 0) {
+        throw new ApiError(404, "No complaints found for this user");
+    }
+
+    res.json(result.recordset);
+});
+
 // GET SINGLE COMPLAINT
 export const getComplaint = TryCatch(async (req, res, next) => {
     const { id } = req.params;
@@ -52,7 +76,7 @@ export const getComplaint = TryCatch(async (req, res, next) => {
     const result = await pool.request()
         .input("id", mssql.Int, id)
         .query(`
-            SELECT c.complaint_id, c.complaint_detail, c.status, c.created_at, c.updated_at,
+             c.complaint_id, c.complaint_detail, c.status, c.created_at, c.updated_at,
                    d.deptt_name, i.issue_type
             FROM Complaints c
             JOIN Departments d ON c.department_id = d.deptt_id

@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { UserForm } from "@/components/user-form"
-import { useGetUsersQuery, useDeleteUserMutation } from "@/lib/features/user-api"
-import { createColumns, type User } from "./columns"
+import { RoleForm } from "@/components/role-form"
+import { useGetRolesQuery, useDeleteRoleMutation } from "@/lib/features/role-api"
+import { createColumns, type Role } from "./columns"
 import { DataTable } from "./data-table"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -20,33 +20,33 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-export default function UserDefPage() {
-  const [editingUser, setEditingUser] = useState<User | null>(null)
-  const [deletingUser, setDeletingUser] = useState<User | null>(null)
-  const { data: users, isLoading, isError, refetch } = useGetUsersQuery()
-  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation()
+export default function RoleDefPage() {
+  const [editingRole, setEditingRole] = useState<Role | null>(null)
+  const [deletingRole, setDeletingRole] = useState<Role | null>(null)
+  const { data: roles, isLoading, isError, refetch } = useGetRolesQuery()
+  const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation()
 
   async function handleDelete() {
-    if (!deletingUser) return
+    if (!deletingRole) return
     try {
-      await deleteUser(deletingUser.user_id).unwrap()
-      setDeletingUser(null)
+      await deleteRole(deletingRole.role_id).unwrap()
+      setDeletingRole(null)
     } catch (error) {
-      console.error("Failed to delete user:", error)
+      console.error("Failed to delete role:", error)
     }
   }
 
   const columns = createColumns(
-    (user) => setEditingUser(user),
-    (user) => setDeletingUser(user),
+    (role) => setEditingRole(role),
+    (role) => setDeletingRole(role),
   )
 
   if (isLoading) {
     return (
       <div className="flex flex-col gap-6 p-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">User Definition</h1>
-          <p className="text-muted-foreground">Manage system users</p>
+          <h1 className="text-2xl font-bold tracking-tight">Role Definition</h1>
+          <p className="text-muted-foreground">Manage user roles for your application</p>
         </div>
         <Card>
           <CardHeader>
@@ -69,13 +69,13 @@ export default function UserDefPage() {
     return (
       <div className="flex flex-col gap-6 p-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">User Definition</h1>
-          <p className="text-muted-foreground">Manage system users</p>
+          <h1 className="text-2xl font-bold tracking-tight">Role Definition</h1>
+          <p className="text-muted-foreground">Manage user roles for your application</p>
         </div>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="size-12 text-destructive mb-4" />
-            <p className="text-lg font-medium text-destructive">Failed to load users</p>
+            <p className="text-lg font-medium text-destructive">Failed to load roles</p>
             <p className="text-sm text-muted-foreground mb-4">Please check if the backend server is running</p>
             <Button variant="outline" onClick={() => refetch()}>
               Try Again
@@ -89,41 +89,41 @@ export default function UserDefPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">User Definition</h1>
-        <p className="text-muted-foreground">Manage system users</p>
+        <h1 className="text-2xl font-bold tracking-tight">Role Definition</h1>
+        <p className="text-muted-foreground">Manage user roles for your application</p>
       </div>
 
-      <UserForm editingUser={editingUser} onCancelEdit={() => setEditingUser(null)} />
+      <RoleForm editingRole={editingRole} onCancelEdit={() => setEditingRole(null)} />
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <List className="size-5" />
-            Users List
+            Roles List
           </CardTitle>
           <CardDescription>
-            {users?.length ?? 0} user{(users?.length ?? 0) !== 1 && "s"} found
+            {roles?.length ?? 0} role{(roles?.length ?? 0) !== 1 && "s"} found
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {users && users.length > 0 ? (
-            <DataTable columns={columns} data={users} />
+          {roles && roles.length > 0 ? (
+            <DataTable columns={columns} data={roles} />
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <AlertCircle className="size-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium">No users found</p>
-              <p className="text-sm text-muted-foreground">Create your first user using the form above</p>
+              <p className="text-lg font-medium">No roles found</p>
+              <p className="text-sm text-muted-foreground">Create your first role using the form above</p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <AlertDialog open={!!deletingUser} onOpenChange={() => setDeletingUser(null)}>
+      <AlertDialog open={!!deletingRole} onOpenChange={() => setDeletingRole(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogTitle>Delete Role</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{deletingUser?.name}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;{deletingRole?.role_name}&quot;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

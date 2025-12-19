@@ -1,7 +1,7 @@
 import { TryCatch } from "../middlewares/error.middleware.js";
 import { ApiError } from "../utils/ApiError.js";
 import { mssql, connect } from "../utils/features.js";
-
+import validator from "validator";
 // CREATE ISSUE
 export const createIssue = TryCatch(async (req, res, next) => {
   let { issue_type } = req.body;
@@ -85,7 +85,7 @@ export const updateIssue = TryCatch(async (req, res, next) => {
   if (existingIssue.recordset.length > 0)
     throw new ApiError(409, "Another issue with the same type already exists");
 
-  const result = await pool
+  const result = await pool 
     .request()
     .input("id", mssql.Int, id)
     .input("issue_type", mssql.VarChar, issue_type)
