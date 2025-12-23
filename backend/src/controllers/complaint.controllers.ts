@@ -62,9 +62,6 @@ export const getUserComplaints = TryCatch(async (req, res, next) => {
             JOIN Users u ON c.user_id = u.user_id
             WHERE c.user_id = @user_id
         `);
-    if (result.recordset.length === 0) {
-        throw new ApiError(404, "No complaints found for this user");
-    }
 
     res.json(result.recordset);
 });

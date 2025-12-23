@@ -46,22 +46,24 @@ export function ComplaintForm({ editingComplaint, onCancelEdit }: ComplaintFormP
   })
 
   useEffect(() => {
-    if (editingComplaint) {
+    if (editingComplaint && departments && issues) {
+      const dept = departments.find(d => d.deptt_name === editingComplaint.deptt_name);
+      const issue = issues.find(i => i.issue_type === editingComplaint.issue_type);
       form.reset({
-        department_id: editingComplaint.department_id,
-        issue_id: editingComplaint.issue_id,
+        department_id: dept?.deptt_id,
+        issue_id: issue?.issue_id,
         complaint_detail: editingComplaint.complaint_detail,
         status: editingComplaint.status,
-      })
-    } else {
+      });
+    } else if (!editingComplaint) {
       form.reset({
         department_id: undefined,
         issue_id: undefined,
         complaint_detail: "",
         status: "Pending",
-      })
+      });
     }
-  }, [editingComplaint, form])
+  }, [editingComplaint, departments, issues, form])
 
   async function onSubmit(values: ComplaintFormValues) {
     try {

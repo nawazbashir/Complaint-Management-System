@@ -22,8 +22,6 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
         <ReduxProvider>
           <SidebarProvider>
             <AppSidebar />
@@ -34,7 +32,5 @@ export default function RootLayout({
             <Toaster />
           </SidebarProvider>
         </ReduxProvider>
-      </body>
-    </html>
   )
 }
