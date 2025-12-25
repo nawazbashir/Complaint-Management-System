@@ -42,15 +42,15 @@ import { Loader2, PlusCircle, Save, X } from "lucide-react";
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   phone: z.string().min(5, "Valid phone number is required"),
-  email: z.string().email("Valid email is required"),
-  role_id: z.string().min(1, "Role is required"),
+  email: z.email("Valid email is required"),
+  role_id:  z.number({ error: "Role is required" }),
   is_team_member: z.boolean(),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 interface UserFormProps {
-  editingUser?: User | null;
+  editingUser?: (User & { role_id?: number }) | null;
   onCancelEdit?: () => void;
 }
 
@@ -65,18 +65,19 @@ export function UserForm({ editingUser, onCancelEdit }: UserFormProps) {
       name: "",
       phone: "",
       email: "",
-      role_id: "",
+      role_id: undefined,
       is_team_member: false,
     },
   });
 
   useEffect(() => {
-    if (editingUser) {
+    if (editingUser && roles) {
+      const role = roles.find(r => r.role_name === editingUser.role_name);
       form.reset({
         name: editingUser.name,
         phone: editingUser.phone,
         email: editingUser.email,
-        role_id: editingUser.role_id.toString(),
+        role_id: role?.role_id,
         is_team_member: editingUser.is_team_member,
       });
     } else {
@@ -84,21 +85,22 @@ export function UserForm({ editingUser, onCancelEdit }: UserFormProps) {
         name: "",
         phone: "",
         email: "",
-        role_id: "",
+        role_id: undefined,
         is_team_member: false,
       });
     }
-  }, [editingUser, form]);
+  }, [editingUser, form, roles]);
 
   async function onSubmit(data: FormData) {
     try {
       if (editingUser) {
         await updateUser({
+          
           id: editingUser.user_id,
           name: data.name,
           phone: data.phone,
           email: data.email,
-          role_id: Number.parseInt(data.role_id),
+          role_id: data.role_id,
           is_team_member: data.is_team_member,
         }).unwrap();
         toast.success('User updated successfully!', {
@@ -115,7 +117,7 @@ export function UserForm({ editingUser, onCancelEdit }: UserFormProps) {
           name: data.name,
           phone: data.phone,
           email: data.email,
-          role_id: Number.parseInt(data.role_id),
+          role_id: data.role_id,
           is_team_member: data.is_team_member,
         }).unwrap();
         toast.success('User created successfully!', {
@@ -210,7 +212,7 @@ export function UserForm({ editingUser, onCancelEdit }: UserFormProps) {
                     <FormLabel>Role</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value}
+                      value={field.value?.toString()}
                       disabled={isLoadingRoles}
                     >
                       <FormControl>

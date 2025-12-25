@@ -47,10 +47,10 @@ export function ComplaintForm({ editingComplaint, onCancelEdit }: ComplaintFormP
 
   useEffect(() => {
     if (editingComplaint && departments && issues) {
-      const dept = departments.find(d => d.deptt_name === editingComplaint.deptt_name);
+      const deptt = departments.find(d => d.deptt_name === editingComplaint.deptt_name);
       const issue = issues.find(i => i.issue_type === editingComplaint.issue_type);
       form.reset({
-        department_id: dept?.deptt_id,
+        department_id: deptt?.deptt_id,
         issue_id: issue?.issue_id,
         complaint_detail: editingComplaint.complaint_detail,
         status: editingComplaint.status,
