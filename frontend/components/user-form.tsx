@@ -211,7 +211,7 @@ export function UserForm({ editingUser, onCancelEdit }: UserFormProps) {
                   <FormItem>
                     <FormLabel>Role</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => field.onChange(Number.parseInt(value))}
                       value={field.value?.toString()}
                       disabled={isLoadingRoles}
                     >
